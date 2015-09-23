@@ -18,7 +18,7 @@ public class CommandLatchRunnable implements Runnable {
 	public void run() {
 
 		try {
-			proc.downloadIssues();
+			proc.processIssues();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

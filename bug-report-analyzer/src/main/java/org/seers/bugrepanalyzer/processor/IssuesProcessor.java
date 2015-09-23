@@ -2,10 +2,13 @@ package org.seers.bugrepanalyzer.processor;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.seers.bugrepanalyzer.index.AssDocumentIndexer;
 import org.seers.bugrepanalyzer.json.JSONIssue;
+import org.seers.bugrepanalyzer.json.JSONIssueFields;
 import org.seers.bugrepanalyzer.json.JSONIssues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +32,11 @@ public class IssuesProcessor {
 	private File outDir;
 	private int totalResults;
 	private CsvWriter csvw;
+	private boolean checkFiles;
+	private AssDocumentIndexer indexer;
 
 	public IssuesProcessor(String domain, String project, int i, int numResults, int totalResults, File outDir,
-			CsvWriter csvw) {
+			CsvWriter csvw, boolean checkFiles, AssDocumentIndexer indexer) throws IOException {
 		super();
 		this.domain = domain;
 		this.project = project;
@@ -40,11 +45,39 @@ public class IssuesProcessor {
 		this.outDir = outDir;
 		this.totalResults = totalResults;
 		this.csvw = csvw;
+		this.checkFiles = checkFiles;
+		this.indexer = indexer;
 	}
 
-	public File downloadIssues() throws Exception {
-		LOGGER.debug("Downloading issues [" + currentIssue + ", " + (currentIssue + numResults) + "]");
+	public File processIssues() throws Exception {
+		File outFile = getOutFile(project, currentIssue, outDir);
+		String contentFile = null;
 
+		if (checkFiles && outFile.exists() && outFile.isFile()) {
+			LOGGER.debug("Reading file [" + currentIssue + ", " + (currentIssue + numResults) + "]");
+			contentFile = FileUtils.readFileToString(outFile);
+		} else {
+			LOGGER.debug("Downloading issues [" + currentIssue + ", " + (currentIssue + numResults) + "]");
+			contentFile = downLoadIssues();
+
+			// write original json
+			FileUtils.writeStringToFile(outFile, contentFile);
+		}
+
+		// parse necessary fields
+		Gson gson = new GsonBuilder().setDateFormat(JSONIssueFields.DATE_PATTERN).create();
+		JSONIssues issuesContent = gson.fromJson(contentFile, JSONIssues.class);
+
+		writeJsonIssues(issuesContent);
+
+		indexer.indexDocuments(issuesContent.getIssues());
+
+		return outFile;
+
+	}
+
+	private String downLoadIssues() throws UnsupportedEncodingException, IOException {
+		String contentFile;
 		String jql = HttpJiraUtils.getJql(project, currentIssue, numResults);
 		String urlJira = domain + JIRA_PATH_SEARCH + jql;
 
@@ -57,19 +90,8 @@ public class IssuesProcessor {
 
 		// pretty printing
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String prettyJson = gson.toJson(json);
-
-		// write original json
-		File outFile = writeResponse(prettyJson, project, currentIssue, outDir);
-
-		// parse necessary fields
-		gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").create();
-		JSONIssues issuesContent = gson.fromJson(prettyJson, JSONIssues.class);
-
-		writeJsonIssues(issuesContent);
-
-		return outFile;
-
+		contentFile = gson.toJson(json);
+		return contentFile;
 	}
 
 	private void writeJsonIssues(JSONIssues issuesContent) {
@@ -93,9 +115,7 @@ public class IssuesProcessor {
 
 	}
 
-	private File writeResponse(String response, String project, int i, File outDir) throws IOException {
-		File file = new File(outDir + File.separator + project + "-" + i + ".json");
-		FileUtils.writeStringToFile(file, response);
-		return file;
+	private File getOutFile(String project, int i, File outDir) {
+		return new File(outDir + File.separator + project + "-" + i + ".json");
 	}
 }

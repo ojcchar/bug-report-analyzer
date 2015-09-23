@@ -2,8 +2,8 @@ package org.seers.bugrepanalyzer.json;
 
 public class JSONIssueField {
 
-	private int id;
-	private String name;
+	private int id = -1;
+	private String name = "";
 
 	public int getId() {
 		return id;

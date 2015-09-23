@@ -24,7 +24,7 @@ public class MainJiraRetrieverTest {
 		File directory = new File(outFolder);
 		FileUtils.forceMkdir(directory);
 
-		String[] args = { "https://issues.apache.org", outFolder, "MAHOUT" };
+		String[] args = { "https://issues.apache.org", outFolder, "MAHOUT", "CK" };
 		MainJiraRetriever.main(args);
 
 		FileUtils.deleteDirectory(directory);

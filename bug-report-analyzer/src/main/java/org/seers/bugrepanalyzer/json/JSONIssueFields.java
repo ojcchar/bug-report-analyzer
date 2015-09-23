@@ -1,11 +1,15 @@
 package org.seers.bugrepanalyzer.json;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 
 public class JSONIssueFields {
+
+	public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
 	@SerializedName("issuetype")
 	private JSONIssueField issueType;
@@ -87,6 +91,71 @@ public class JSONIssueFields {
 				+ ", versions=" + versions + ", updated=" + updated + ", status=" + status + ", components="
 				+ components + ", description=" + description + ", summary=" + summary + ", creator=" + creator
 				+ ", reporter=" + reporter + "]";
+	}
+
+	public List<String> getCSVLine() {
+		List<String> line = new ArrayList<>();
+		line.add(getFieldName(issueType));
+		line.add(getListFields(fixVersions));
+		line.add(getFieldName(resolution));
+		line.add(getDateFormat(resolutionDate));
+		line.add(getDateFormat(created));
+		line.add(getFieldName(priority));
+		line.add(getDateFormat(updated));
+		line.add(getFieldName(status));
+		line.add(getListFields(components));
+		line.add(getFieldName(description));
+		line.add(getFieldName(summary));
+		line.add(getFieldName(creator));
+		line.add(getFieldName(reporter));
+		return line;
+	}
+
+	private String getListFields(List<JSONIssueField> fields) {
+
+		if (fields == null) {
+			return "NA";
+		}
+
+		StringBuffer fixVer = new StringBuffer();
+		for (JSONIssueField field : fields) {
+			fixVer.append(field.getName());
+			fixVer.append(",");
+		}
+		if (fixVer.length() > 0) {
+			fixVer.delete(fixVer.length() - 1, fixVer.length());
+		}
+
+		String string = fixVer.toString();
+		return escapeNewLines(string);
+	}
+
+	private String getFieldName(String field) {
+		if (field == null) {
+			return "NA";
+		}
+		return escapeNewLines(field);
+	}
+
+	private String getDateFormat(Date date) {
+		if (date == null) {
+			return "NA";
+		}
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
+		return dateFormat.format(date);
+	}
+
+	private String getFieldName(JSONIssueField field) {
+		if (field == null) {
+			return "NA";
+		}
+		String name = field.getName();
+		return escapeNewLines(name);
+	}
+
+	private String escapeNewLines(String name) {
+		return name.replace("\n\r", "\\n\\r").replace("\r\n", "\\r\\n").replace("\r", "\\r").replace("\n", "\\n");
 	}
 
 }

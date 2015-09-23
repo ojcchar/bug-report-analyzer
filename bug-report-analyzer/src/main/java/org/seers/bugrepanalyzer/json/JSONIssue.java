@@ -15,14 +15,23 @@ public class JSONIssue {
 
 	@Override
 	public String toString() {
-		return "JSONIssue [id=" + id + ", key=" + key + ", fields=" + fields + "]";
+		return "JSONIssue [id=" + id + ", key=" + getKey() + ", fields=" + getFields() + "]";
 	}
 
 	public List<String> getCSVLine() {
 		List<String> line = new ArrayList<>();
 		line.add(String.valueOf(id));
-		line.add(key);
+		line.add(getKey());
+		line.addAll(getFields().getCSVLine());
 		return line;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public JSONIssueFields getFields() {
+		return fields;
 	}
 
 }
