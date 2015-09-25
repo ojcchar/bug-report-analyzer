@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer;
+package seers.bugrepanalyzer;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -8,14 +8,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
-import org.seers.bugrepanalyzer.index.AssDocumentIndexer;
-import org.seers.bugrepanalyzer.processor.HttpJiraUtils;
-import org.seers.bugrepanalyzer.processor.IssuesProcessor;
-import org.seers.bugrepanalyzer.stats.AssDocumentReporter;
-import org.seers.bugrepanalyzer.stats.AssTermStats;
-import org.seers.bugrepanalyzer.stats.IndexStats;
-import org.seers.bugrepanalyzer.threads.CommandLatchRunnable;
-import org.seers.bugrepanalyzer.threads.ThreadCommandExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,13 +16,20 @@ import com.google.gson.JsonParser;
 
 import net.quux00.simplecsv.CsvWriter;
 import net.quux00.simplecsv.CsvWriterBuilder;
+import seers.bugrepanalyzer.index.AssDocumentIndexer;
+import seers.bugrepanalyzer.processor.HttpJiraUtils;
+import seers.bugrepanalyzer.processor.IssuesProcessor;
+import seers.bugrepanalyzer.stats.AssDocumentReporter;
+import seers.bugrepanalyzer.stats.AssTermStats;
+import seers.bugrepanalyzer.stats.IndexStats;
+import seers.bugrepanalyzer.threads.CommandLatchRunnable;
+import seers.bugrepanalyzer.threads.ThreadCommandExecutor;
+import seers.bugrepanalyzer.utils.GenericConstants;
 
 public class MainJiraRetriever {
 
 	private static final String JIRA_PATH_SEARCH = "/jira/rest/api/2/search?";
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainJiraRetriever.class);
-	private static final File stopWordsFile = new File("stopwords-en-java-html.txt");
-
 	private static String domain;
 	private static String outputFolder;
 	private static boolean checkFiles;
@@ -80,7 +79,7 @@ public class MainJiraRetriever {
 
 			LOGGER.info("Issues processed in " + issuesFile);
 
-			readIssues(project, indexDir);
+			// readIssues(project, indexDir);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -109,7 +108,7 @@ public class MainJiraRetriever {
 		FileWriter fw = new FileWriter(file);
 		CsvWriter csvw = new CsvWriterBuilder(fw).separator(';').build();
 
-		AssDocumentIndexer indexer = new AssDocumentIndexer(stopWordsFile, indexDir);
+		AssDocumentIndexer indexer = new AssDocumentIndexer(GenericConstants.STOP_WORDS_FILE, indexDir);
 
 		// get the issues
 		int numResults = 100;

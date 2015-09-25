@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer.processor;
+package seers.bugrepanalyzer.processor;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,10 +6,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.seers.bugrepanalyzer.index.AssDocumentIndexer;
-import org.seers.bugrepanalyzer.json.JSONIssue;
-import org.seers.bugrepanalyzer.json.JSONIssueFields;
-import org.seers.bugrepanalyzer.json.JSONIssues;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +15,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.quux00.simplecsv.CsvWriter;
+import seers.bugrepanalyzer.index.AssDocumentIndexer;
+import seers.bugrepanalyzer.json.JSONIssue;
+import seers.bugrepanalyzer.json.JSONIssueFields;
+import seers.bugrepanalyzer.json.JSONIssues;
 
 public class IssuesProcessor {
 

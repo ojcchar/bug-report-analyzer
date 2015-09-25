@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer.threads;
+package seers.bugrepanalyzer.threads;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

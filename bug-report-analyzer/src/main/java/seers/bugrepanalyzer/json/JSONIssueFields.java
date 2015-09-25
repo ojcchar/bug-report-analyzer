@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer.json;
+package seers.bugrepanalyzer.json;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -7,9 +7,13 @@ import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 
+import preprocessor2.QueryPreprocessor2;
+import seers.bugrepanalyzer.utils.GenericConstants;
+
 public class JSONIssueFields {
 
 	public static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+	private QueryPreprocessor2 preProc = new QueryPreprocessor2();
 
 	@SerializedName("issuetype")
 	private JSONIssueField issueType;
@@ -104,8 +108,10 @@ public class JSONIssueFields {
 		line.add(getDateFormat(updated));
 		line.add(getFieldName(status));
 		line.add(getListFields(components));
-		line.add(getFieldName(description));
-		line.add(getFieldName(summary));
+		line.add(getFieldName(description, false));
+		line.add(getFieldName(description, true));
+		line.add(getFieldName(summary, false));
+		line.add(getFieldName(summary, true));
 		line.add(getFieldName(creator));
 		line.add(getFieldName(reporter));
 		return line;
@@ -130,11 +136,15 @@ public class JSONIssueFields {
 		return escapeNewLines(string);
 	}
 
-	private String getFieldName(String field) {
+	private String getFieldName(String field, boolean preProcess) {
 		if (field == null) {
 			return "NA";
 		}
-		return escapeNewLines(field);
+		if (preProcess) {
+			return preProc.preprocessQuery(field, GenericConstants.STOP_WORDS_FILE);
+		} else {
+			return escapeNewLines(field);
+		}
 	}
 
 	private String getDateFormat(Date date) {

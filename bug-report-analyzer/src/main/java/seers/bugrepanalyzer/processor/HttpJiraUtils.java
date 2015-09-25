@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer.processor;
+package seers.bugrepanalyzer.processor;
 
 import java.io.BufferedReader;
 import java.io.IOException;

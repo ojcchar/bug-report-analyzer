@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer.index;
+package seers.bugrepanalyzer.index;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,8 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.SimpleFSDirectory;
-import org.seers.bugrepanalyzer.json.JSONIssue;
+
+import seers.bugrepanalyzer.json.JSONIssue;
 
 public class AssDocumentIndexer {
 
@@ -39,7 +40,7 @@ public class AssDocumentIndexer {
 	 *            the document collection
 	 * @param idxDir
 	 *            the output directory
-	 * @param stopWordsFile
+	 * @param STOP_WORDS_FILE
 	 *            the stop words file
 	 * @param similarity
 	 * @throws IOException

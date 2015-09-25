@@ -1,8 +1,8 @@
-package org.seers.bugrepanalyzer.threads;
+package seers.bugrepanalyzer.threads;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.seers.bugrepanalyzer.processor.IssuesProcessor;
+import seers.bugrepanalyzer.processor.IssuesProcessor;
 
 public class CommandLatchRunnable implements Runnable {
 

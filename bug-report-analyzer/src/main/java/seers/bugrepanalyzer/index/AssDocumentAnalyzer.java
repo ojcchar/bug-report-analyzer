@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer.index;
+package seers.bugrepanalyzer.index;
 
 import java.io.File;
 import java.io.IOException;

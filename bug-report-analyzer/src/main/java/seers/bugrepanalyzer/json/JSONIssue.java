@@ -1,4 +1,4 @@
-package org.seers.bugrepanalyzer.json;
+package seers.bugrepanalyzer.json;
 
 import java.util.ArrayList;
 import java.util.List;
