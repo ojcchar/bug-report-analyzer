@@ -16,14 +16,19 @@ public class CommandLatchRunnable implements Runnable {
 
 	@Override
 	public void run() {
-
 		try {
 			proc.processIssues();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			cntDwnLatch.countDown();
+			// System.out.println("Command " + getName() + " done");
 		}
-		cntDwnLatch.countDown();
 
+	}
+
+	public String getName() {
+		return proc.getName();
 	}
 
 }

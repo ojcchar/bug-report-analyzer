@@ -33,7 +33,6 @@ public class IssuesProcessor {
 	private int totalResults;
 	private CsvWriter csvw;
 	private boolean checkFiles;
-	private AssDocumentIndexer indexer;
 
 	public IssuesProcessor(String domain, String project, int i, int numResults, int totalResults, File outDir,
 			CsvWriter csvw, boolean checkFiles, AssDocumentIndexer indexer) throws IOException {
@@ -46,7 +45,6 @@ public class IssuesProcessor {
 		this.totalResults = totalResults;
 		this.csvw = csvw;
 		this.checkFiles = checkFiles;
-		this.indexer = indexer;
 	}
 
 	public File processIssues() throws Exception {
@@ -70,7 +68,7 @@ public class IssuesProcessor {
 
 		writeJsonIssues(issuesContent);
 
-		indexer.indexDocuments(issuesContent.getIssues());
+		// indexer.indexDocuments(issuesContent.getIssues());
 
 		return outFile;
 
@@ -117,5 +115,9 @@ public class IssuesProcessor {
 
 	private File getOutFile(String project, int i, File outDir) {
 		return new File(outDir + File.separator + project + "-" + i + ".json");
+	}
+
+	public String getName() {
+		return "project [" + this.currentIssue + ", " + (currentIssue + numResults) + "]";
 	}
 }

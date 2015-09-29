@@ -16,15 +16,10 @@ import com.google.gson.JsonParser;
 
 import net.quux00.simplecsv.CsvWriter;
 import net.quux00.simplecsv.CsvWriterBuilder;
-import seers.bugrepanalyzer.index.AssDocumentIndexer;
 import seers.bugrepanalyzer.processor.HttpJiraUtils;
 import seers.bugrepanalyzer.processor.IssuesProcessor;
-import seers.bugrepanalyzer.stats.AssDocumentReporter;
-import seers.bugrepanalyzer.stats.AssTermStats;
-import seers.bugrepanalyzer.stats.IndexStats;
 import seers.bugrepanalyzer.threads.CommandLatchRunnable;
 import seers.bugrepanalyzer.threads.ThreadCommandExecutor;
-import seers.bugrepanalyzer.utils.GenericConstants;
 
 public class MainJiraRetriever {
 
@@ -37,98 +32,98 @@ public class MainJiraRetriever {
 	public static void main(String[] args) throws IOException {
 
 		String[] projects = null;
+		String[] outFiles = null;
 		try {
 			domain = args[0];
 			outputFolder = args[1];
 			projects = args[2].split(",");
-			checkFiles = "CK".equalsIgnoreCase(args[3]);
+			outFiles = args[3].split(",");
+			checkFiles = "CK".equalsIgnoreCase(args[4]);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			LOGGER.info("Wrong arguments");
-			LOGGER.info("Arguments [jira_domain] [output_folder] [projects] [check_files? (CK) ]");
+			LOGGER.info(
+					"Arguments [jira_domain] [output_folder] [projects] [output_files] [check_files_already_downloaded? (CK/NCK) ]");
+			LOGGER.info(
+					"Example https://issues.apache.org c:/out MAHOUT,ZOOKEEPER mahout-0.8,zookeeper-3.4.5;zookeeper-3.4.6 CK");
 			return;
 		}
 
-		for (String project : projects) {
-			project = project.trim();
-
-			processProject(project);
-		}
-
-	}
-
-	private static void processProject(String project) {
 		try {
 
-			LOGGER.info("Project: " + project);
+			if (outFiles.length != projects.length) {
+				throw new Exception("Out files and projects do not match");
+			}
+			for (int i = 0; i < projects.length; i++) {
+				String project = projects[i].trim();
 
-			// get the total # of issues
-			int numIssues = getNumIssues(project);
+				if (project.isEmpty()) {
+					continue;
+				}
 
-			LOGGER.info("Total # of issues: " + numIssues);
-
-			// create out folder
-			File outDir = new File(outputFolder + File.separator + "json_data");
-			FileUtils.forceMkdir(outDir);
-
-			// create index folder
-			File indexDir = new File(outputFolder + File.separator + "index");
-			FileUtils.forceMkdir(indexDir);
-
-			// download the issues
-			File issuesFile = processIssues(project, numIssues, outDir, indexDir);
-
-			LOGGER.info("Issues processed in " + issuesFile);
-
-			// readIssues(project, indexDir);
-
+				processProject(project, outFiles[i]);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-
-	private static void readIssues(String project, File indexDir) throws IOException {
-		AssDocumentReporter rep = new AssDocumentReporter(indexDir);
-
-		IndexStats indexStats = rep.getIndexStats(0);
-
-		System.out.println(indexStats);
-
-		List<AssTermStats> termStats = rep.getTopTermsByDocFreq(indexStats);
-		for (AssTermStats assTermStats : termStats) {
-			System.out.println(assTermStats);
+		} finally {
+			ThreadCommandExecutor.getInstance().shutdown();
 		}
 
-		rep.close();
 	}
 
-	private static File processIssues(String project, int numIssues, File outDir, File indexDir) throws Exception {
+	private static void processProject(String project, String outFiles) throws Exception {
+
+		LOGGER.info("Project: " + project);
+
+		// get the total # of issues
+		int numIssues = getNumIssues(project);
+
+		LOGGER.info("Total # of issues: " + numIssues);
+
+		// create out folder
+		File outDir = new File(outputFolder + File.separator + "json_data");
+		FileUtils.forceMkdir(outDir);
+
+		String[] outFilesSplit = outFiles.split(";");
+
+		for (String outFile : outFilesSplit) {
+
+			// download the issues
+			File issuesFile = processIssues(project, numIssues, outDir, null, outFile);
+
+			LOGGER.info("Issues processed in " + issuesFile);
+		}
+
+	}
+
+	private static File processIssues(String project, int numIssues, File outDir, File indexDir, String outFile)
+			throws Exception {
 
 		// out file
-		File file = new File(outDir + File.separator + "issues-" + project + ".csv");
-		FileWriter fw = new FileWriter(file);
-		CsvWriter csvw = new CsvWriterBuilder(fw).separator(';').build();
+		File file = new File(outDir + File.separator + outFile + "_Queries_info.txt");
+		try (CsvWriter csvw = new CsvWriterBuilder(new FileWriter(file)).separator(';').build()) {
 
-		AssDocumentIndexer indexer = new AssDocumentIndexer(GenericConstants.STOP_WORDS_FILE, indexDir);
+			// AssDocumentIndexer indexer = new
+			// AssDocumentIndexer(GenericConstants.STOP_WORDS_FILE, indexDir);
 
-		// get the issues
-		int numResults = 100;
-		List<IssuesProcessor> procs = new ArrayList<>();
-		for (int i = 0; i < numIssues; i += numResults) {
-			IssuesProcessor proc = new IssuesProcessor(domain, project, i, numResults, numIssues, outDir, csvw,
-					checkFiles, indexer);
-			procs.add(proc);
+			// get the issues
+			int numResults = 100;
+			List<IssuesProcessor> procs = new ArrayList<>();
+			for (int i = 0; i < numIssues; i += numResults) {
+				IssuesProcessor proc = new IssuesProcessor(domain, project, i, numResults, numIssues, outDir, csvw,
+						checkFiles, null);
+				procs.add(proc);
+			}
+
+			// run the threads
+			CountDownLatch cntDwnLatch = new CountDownLatch(procs.size());
+			for (IssuesProcessor proc : procs) {
+				ThreadCommandExecutor.getInstance().exeucuteCommRunnable(new CommandLatchRunnable(proc, cntDwnLatch));
+
+			}
+			cntDwnLatch.await();
+
 		}
-
-		// run the threads
-		CountDownLatch cntDwnLatch = new CountDownLatch(procs.size());
-		for (IssuesProcessor proc : procs) {
-			ThreadCommandExecutor.getInstance().exeucuteCommRunnable(new CommandLatchRunnable(proc, cntDwnLatch));
-
-		}
-		cntDwnLatch.await();
-
-		csvw.close();
-		indexer.close();
+		// indexer.close();
 
 		return file;
 	}
