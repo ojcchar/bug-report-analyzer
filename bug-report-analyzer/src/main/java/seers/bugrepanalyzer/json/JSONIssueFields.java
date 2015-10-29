@@ -32,6 +32,9 @@ public class JSONIssueFields {
 	private JSONIssueField creator;
 	private JSONIssueField reporter;
 
+	@SerializedName("issuelinks")
+	private List<JSONIssueLink> issueLinks;
+
 	public JSONIssueField getIssueType() {
 		return issueType;
 	}
@@ -98,6 +101,7 @@ public class JSONIssueFields {
 	}
 
 	public List<String> getCSVLine() {
+
 		List<String> line = new ArrayList<>();
 		line.add(getFieldName(issueType));
 		line.add(getListFields(fixVersions));
@@ -141,9 +145,37 @@ public class JSONIssueFields {
 			return "NA";
 		}
 		if (preProcess) {
-			return preProc.preprocessQuery(field, GenericConstants.STOP_WORDS_FILE);
+
+			// ---------------------------
+
+			final String tagName = "code";
+			final String tagAttrs = "(:[=a-zA-Z.\\|\\d\\(\\)\\s/\\\\_<>\\?#\\-\\'\"@]+)";
+
+			String noNewLines = field.replaceAll("\\R", " ");
+			String noTags = noNewLines.replace("{quote}", "").replace("{noformat}", "").replace("{color}", "")
+					.replaceAll("\\{color:[a-zA-Z]+\\}", "").replaceAll("\\{panel" + tagAttrs + "?\\}", "")
+					.replace("{panel}", "");
+
+			// ---------------------------
+
+			StringBuilder regexBuilder = new StringBuilder();
+			String leftTag = "\\{" + tagName + tagAttrs + "?\\}";
+			String tagContent = "(.+?)";
+			String rightTag = "\\{" + tagName + "\\}";
+			regexBuilder.append(leftTag);
+			regexBuilder.append(tagContent);
+			regexBuilder.append(rightTag);
+
+			// ---------------------------
+
+			String noCodeField = noTags.replaceAll(regexBuilder.toString(), "");
+			return preProc.preprocessQuery(noCodeField, GenericConstants.STOP_WORDS_FILE);
+
+			// ---------------------------
+
 		} else {
-			return escapeNewLines(field);
+			String fieldEscaped = escapeNewLines(field);
+			return fieldEscaped;
 		}
 	}
 
@@ -166,6 +198,14 @@ public class JSONIssueFields {
 
 	private String escapeNewLines(String name) {
 		return name.replace("\n\r", "\\n\\r").replace("\r\n", "\\r\\n").replace("\r", "\\r").replace("\n", "\\n");
+	}
+
+	public List<JSONIssueLink> getIssueLinks() {
+		return issueLinks;
+	}
+
+	public void setIssueLinks(List<JSONIssueLink> issueLinks) {
+		this.issueLinks = issueLinks;
 	}
 
 }

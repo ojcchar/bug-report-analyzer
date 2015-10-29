@@ -92,5 +92,10 @@
   		<artifactId>query-processor</artifactId>
   		<version>0.0.1</version>
   	</dependency>
+  	<dependency>
+  		<groupId>edu.utdallas.seers.tyrion</groupId>
+  		<artifactId>auth-processor</artifactId>
+  		<version>0.0.1</version>
+  	</dependency>
   </dependencies>
 </project>

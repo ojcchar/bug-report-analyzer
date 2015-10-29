@@ -7,23 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.quux00.simplecsv.CsvWriter;
 import net.quux00.simplecsv.CsvWriterBuilder;
+import seers.bugrepanalyzer.processor.DuplicateProcessor;
 import seers.bugrepanalyzer.processor.HttpJiraUtils;
-import seers.bugrepanalyzer.processor.IssuesRetriever;
 import seers.bugrepanalyzer.threads.CommandLatchRunnable;
 import seers.bugrepanalyzer.threads.ThreadCommandExecutor;
 
-public class MainJiraRetriever {
+public class DuplicateLinker {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MainJiraRetriever.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DuplicateLinker.class);
+	private static String inFolder;
 	private static String domain;
-	private static String outputFolder;
-	private static boolean checkFiles;
 
 	public static void main(String[] args) throws IOException {
 
@@ -31,16 +29,14 @@ public class MainJiraRetriever {
 		String[] outFiles = null;
 		try {
 			domain = args[0];
-			outputFolder = args[1];
+			inFolder = args[1];
 			projects = args[2].split(",");
 			outFiles = args[3].split(",");
-			checkFiles = "CK".equalsIgnoreCase(args[4]);
 		} catch (ArrayIndexOutOfBoundsException e) {
-			LOGGER.info("Wrong arguments");
+			LOGGER.error("Wrong arguments");
+			LOGGER.info("Arguments: [jira_domain] [in_folder] [projects] [output_files]");
 			LOGGER.info(
-					"Arguments [jira_domain] [output_folder] [projects] [output_files] [check_files_already_downloaded? (CK/NCK) ]");
-			LOGGER.info(
-					"Example https://issues.apache.org c:/out MAHOUT,ZOOKEEPER mahout-0.8,zookeeper-3.4.5;zookeeper-3.4.6 CK");
+					"Example https://issues.apache.org c:/in MAHOUT,ZOOKEEPER mahout-0.8,zookeeper-3.4.5;zookeeper-3.4.6");
 			return;
 		}
 
@@ -76,40 +72,38 @@ public class MainJiraRetriever {
 		LOGGER.info("Total # of issues: " + numIssues);
 
 		// create out folder
-		File outDir = new File(outputFolder + File.separator + "json_data");
-		FileUtils.forceMkdir(outDir);
+		File inDir = new File(inFolder + File.separator + "json_data");
 
 		String[] outFilesSplit = outFiles.split(";");
 
 		for (String outFile : outFilesSplit) {
 
 			// download the issues
-			File issuesFile = processIssues(project, numIssues, outDir, null, outFile);
+			File issuesFile = processIssues(project, numIssues, inDir, null, outFile);
 
 			LOGGER.info("Issues processed in " + issuesFile);
 		}
 
 	}
 
-	private static File processIssues(String project, int numIssues, File outDir, File indexDir, String outFile)
+	private static File processIssues(String project, int numIssues, File inDir, File indexDir, String outFile)
 			throws Exception {
 
 		// out file
-		File file = new File(outDir + File.separator + outFile + "_Queries_info.txt");
+		File file = new File(inDir + File.separator + outFile + "_Duplicates.txt");
 		try (CsvWriter csvw = new CsvWriterBuilder(new FileWriter(file)).separator(';').build()) {
 
 			// get the issues
 			int numResults = 100;
-			List<IssuesRetriever> procs = new ArrayList<>();
+			List<DuplicateProcessor> procs = new ArrayList<>();
 			for (int i = 0; i < numIssues; i += numResults) {
-				IssuesRetriever proc = new IssuesRetriever(domain, project, i, numResults, numIssues, outDir, csvw,
-						checkFiles);
+				DuplicateProcessor proc = new DuplicateProcessor(project, i, numResults, numIssues, inDir, csvw);
 				procs.add(proc);
 			}
 
 			// run the threads
 			CountDownLatch cntDwnLatch = new CountDownLatch(procs.size());
-			for (IssuesRetriever proc : procs) {
+			for (DuplicateProcessor proc : procs) {
 				ThreadCommandExecutor.getInstance().exeucuteCommRunnable(new CommandLatchRunnable(proc, cntDwnLatch));
 
 			}

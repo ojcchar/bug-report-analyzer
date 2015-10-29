@@ -13,9 +13,12 @@ import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class HttpJiraUtils {
 	private final static HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
+	private static final String JIRA_PATH_SEARCH = "/jira/rest/api/2/search?";
 
 	public static String getJql(String project, int i, int numResults) throws UnsupportedEncodingException {
 		StringBuilder stringBuilder = new StringBuilder();
@@ -45,5 +48,16 @@ public class HttpJiraUtils {
 		}
 		return result.toString();
 
+	}
+
+	public static int getNumIssues(String project, String domain) throws IOException {
+
+		String jql = HttpJiraUtils.getJql(project, 0, 0);
+		String urlJira = domain + JIRA_PATH_SEARCH + jql;
+
+		String response = HttpJiraUtils.getStringResponse(urlJira);
+		JsonObject jsonObject = new JsonParser().parse(response).getAsJsonObject();
+
+		return jsonObject.get("total").getAsInt();
 	}
 }
