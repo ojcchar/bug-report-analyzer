@@ -15,11 +15,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.quux00.simplecsv.CsvWriter;
+import seers.appcore.threads.processor.ThreadException;
+import seers.appcore.threads.processor.ThreadProcessor;
+import seers.appcore.utils.ExceptionUtils;
 import seers.bugrepanalyzer.json.JSONIssue;
 import seers.bugrepanalyzer.json.JSONIssueFields;
 import seers.bugrepanalyzer.json.JSONIssues;
 
-public class IssuesRetriever implements IssuesProcessor {
+public class IssuesRetriever implements ThreadProcessor {
 
 	private final static String JIRA_PATH_SEARCH = "/jira/rest/api/2/search?";
 	private final static Logger LOGGER = LoggerFactory.getLogger(IssuesRetriever.class);
@@ -47,28 +50,32 @@ public class IssuesRetriever implements IssuesProcessor {
 	}
 
 	@Override
-	public File processIssues() throws Exception {
-		File outFile = getOutFile(project, currentIssue, outDir);
-		String contentFile = null;
+	public void processJob() throws ThreadException {
+		try {
+			File outFile = getOutFile(project, currentIssue, outDir);
+			String contentFile = null;
 
-		if (checkFiles && outFile.exists() && outFile.isFile()) {
-			LOGGER.debug("Reading file [" + currentIssue + ", " + (currentIssue + numResults) + "]");
-			contentFile = FileUtils.readFileToString(outFile);
-		} else {
-			LOGGER.debug("Downloading issues [" + currentIssue + ", " + (currentIssue + numResults) + "]");
-			contentFile = downLoadIssues();
+			if (checkFiles && outFile.exists() && outFile.isFile()) {
+				LOGGER.debug("Reading file [" + currentIssue + ", " + (currentIssue + numResults) + "]");
+				contentFile = FileUtils.readFileToString(outFile);
+			} else {
+				LOGGER.debug("Downloading issues [" + currentIssue + ", " + (currentIssue + numResults) + "]");
+				contentFile = downLoadIssues();
 
-			// write original json
-			FileUtils.writeStringToFile(outFile, contentFile);
+				// write original json
+				FileUtils.writeStringToFile(outFile, contentFile);
+			}
+
+			// parse necessary fields
+			Gson gson = new GsonBuilder().setDateFormat(JSONIssueFields.DATE_PATTERN).create();
+			JSONIssues issuesContent = gson.fromJson(contentFile, JSONIssues.class);
+
+			writeJsonIssues(issuesContent);
+		} catch (Exception e) {
+			ThreadException e2 = new ThreadException(e.getMessage());
+			ExceptionUtils.addStackTrace(e, e2);
+			throw e2;
 		}
-
-		// parse necessary fields
-		Gson gson = new GsonBuilder().setDateFormat(JSONIssueFields.DATE_PATTERN).create();
-		JSONIssues issuesContent = gson.fromJson(contentFile, JSONIssues.class);
-
-		writeJsonIssues(issuesContent);
-
-		return outFile;
 
 	}
 

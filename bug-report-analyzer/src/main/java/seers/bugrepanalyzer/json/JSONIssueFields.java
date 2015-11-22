@@ -197,7 +197,7 @@ public class JSONIssueFields {
 	}
 
 	private String escapeNewLines(String name) {
-		return name.replace("\n\r", "\\n\\r").replace("\r\n", "\\r\\n").replace("\r", "\\r").replace("\n", "\\n");
+		return name.replace("\n\r", "\\r\\n").replace("\r\n", "\\r\\n").replace("\r", "\\r\\n").replace("\n", "\\r\\n");
 	}
 
 	public List<JSONIssueLink> getIssueLinks() {

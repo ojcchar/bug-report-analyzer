@@ -1,31 +1,5 @@
 package seers.bugrepanalyzer;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Vector;
-
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.utdallas.seers.tyrion.auth_processor.authorship.ClassVisitor;
-import edu.utdallas.seers.tyrion.auth_processor.git.CommitBean;
-import edu.utdallas.seers.tyrion.auth_processor.git.GitUtilities;
-import net.quux00.simplecsv.CsvParser;
-import net.quux00.simplecsv.CsvParserBuilder;
-import net.quux00.simplecsv.CsvReader;
-import preprocessor2.QueryException;
-
 public class MainIssueFileLinker {
 	/*
 	 * private static Logger LOGGER =

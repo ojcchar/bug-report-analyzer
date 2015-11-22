@@ -12,12 +12,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.quux00.simplecsv.CsvWriter;
+import seers.appcore.threads.processor.ThreadException;
+import seers.appcore.threads.processor.ThreadProcessor;
+import seers.appcore.utils.ExceptionUtils;
 import seers.bugrepanalyzer.json.JSONIssue;
 import seers.bugrepanalyzer.json.JSONIssueFields;
 import seers.bugrepanalyzer.json.JSONIssueLink;
 import seers.bugrepanalyzer.json.JSONIssues;
 
-public class DuplicateProcessor implements IssuesProcessor {
+public class DuplicateProcessor implements ThreadProcessor {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(IssuesRetriever.class);
 
@@ -36,19 +39,24 @@ public class DuplicateProcessor implements IssuesProcessor {
 	}
 
 	@Override
-	public File processIssues() throws Exception {
+	public void processJob() throws ThreadException {
 
-		LOGGER.debug("Reading file [" + currentIssue + ", " + (currentIssue + numResults) + "]");
-		File inFile = getOutFile(project, currentIssue, inDir);
-		String contentFile = FileUtils.readFileToString(inFile);
+		try {
+			LOGGER.debug("Reading file [" + currentIssue + ", " + (currentIssue + numResults) + "]");
+			File inFile = getOutFile(project, currentIssue, inDir);
+			String contentFile = FileUtils.readFileToString(inFile);
 
-		// parse necessary fields
-		Gson gson = new GsonBuilder().setDateFormat(JSONIssueFields.DATE_PATTERN).create();
-		JSONIssues issues = gson.fromJson(contentFile, JSONIssues.class);
+			// parse necessary fields
+			Gson gson = new GsonBuilder().setDateFormat(JSONIssueFields.DATE_PATTERN).create();
+			JSONIssues issues = gson.fromJson(contentFile, JSONIssues.class);
 
-		writeIssues(issues);
+			writeIssues(issues);
+		} catch (Exception e) {
+			ThreadException e2 = new ThreadException(e.getMessage());
+			ExceptionUtils.addStackTrace(e, e2);
+			throw e2;
+		}
 
-		return inFile;
 	}
 
 	private void writeIssues(JSONIssues issues) {

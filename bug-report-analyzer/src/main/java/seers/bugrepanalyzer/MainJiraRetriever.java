@@ -13,10 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import net.quux00.simplecsv.CsvWriter;
 import net.quux00.simplecsv.CsvWriterBuilder;
+import seers.appcore.threads.CommandLatchRunnable;
+import seers.appcore.threads.ThreadCommandExecutor;
 import seers.bugrepanalyzer.processor.HttpJiraUtils;
 import seers.bugrepanalyzer.processor.IssuesRetriever;
-import seers.bugrepanalyzer.threads.CommandLatchRunnable;
-import seers.bugrepanalyzer.threads.ThreadCommandExecutor;
 
 public class MainJiraRetriever {
 
@@ -60,8 +60,6 @@ public class MainJiraRetriever {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			ThreadCommandExecutor.getInstance().shutdown();
 		}
 
 	}
@@ -107,13 +105,19 @@ public class MainJiraRetriever {
 				procs.add(proc);
 			}
 
-			// run the threads
-			CountDownLatch cntDwnLatch = new CountDownLatch(procs.size());
-			for (IssuesRetriever proc : procs) {
-				ThreadCommandExecutor.getInstance().exeucuteCommRunnable(new CommandLatchRunnable(proc, cntDwnLatch));
+			ThreadCommandExecutor executor = new ThreadCommandExecutor();
 
+			try {
+				// run the threads
+				CountDownLatch cntDwnLatch = new CountDownLatch(procs.size());
+				for (IssuesRetriever proc : procs) {
+					executor.exeucuteCommRunnable(new CommandLatchRunnable(proc, cntDwnLatch));
+
+				}
+				cntDwnLatch.await();
+			} finally {
+				executor.shutdown();
 			}
-			cntDwnLatch.await();
 
 		}
 
