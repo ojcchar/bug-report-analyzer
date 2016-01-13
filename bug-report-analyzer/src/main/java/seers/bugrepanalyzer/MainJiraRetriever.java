@@ -40,7 +40,7 @@ public class MainJiraRetriever {
 			LOGGER.info(
 					"Arguments [jira_domain] [output_folder] [projects] [output_files] [check_files_already_downloaded? (CK/NCK) ]");
 			LOGGER.info(
-					"Example https://issues.apache.org c:/out MAHOUT,ZOOKEEPER mahout-0.8,zookeeper-3.4.5;zookeeper-3.4.6 CK");
+					"Example https://issues.apache.org /home/juan/Data/duplicates MAHOUT,ZOOKEEPER,BOOKKEEPER,DERBY,OPENJPA,PIG,SOLR,TIKA,LUCENE mahout-0.8,zookeeper-3.4.5;bookkeeper-4.4.0;derby-10.0.2.2;openjpa-2.4.1;pig-0.15.1;solr-5.5;tika-1.12;lucene-5.5 CK");
 			return;
 		}
 
