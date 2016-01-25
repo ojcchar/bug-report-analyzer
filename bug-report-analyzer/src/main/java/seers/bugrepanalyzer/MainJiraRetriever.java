@@ -44,12 +44,12 @@ public class MainJiraRetriever {
 			return;
 		}
 
-		try {
+		if (outFiles.length != projects.length) {
+			throw new RuntimeException("Out files and projects do not match");
+		}
 
-			if (outFiles.length != projects.length) {
-				throw new Exception("Out files and projects do not match");
-			}
-			for (int i = 0; i < projects.length; i++) {
+		for (int i = 0; i < projects.length; i++) {
+			try {
 				String project = projects[i].trim();
 
 				if (project.isEmpty()) {
@@ -57,9 +57,9 @@ public class MainJiraRetriever {
 				}
 
 				processProject(project, outFiles[i]);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 
 	}

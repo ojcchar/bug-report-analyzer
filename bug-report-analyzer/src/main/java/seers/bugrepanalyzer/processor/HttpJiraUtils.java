@@ -23,7 +23,7 @@ public class HttpJiraUtils {
 	public static String getJql(String project, int i, int numResults) throws UnsupportedEncodingException {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("jql=");
-		stringBuilder.append(URLEncoder.encode("project=" + project, "UTF-8"));
+		stringBuilder.append(URLEncoder.encode("project=\"" + project + "\"", "UTF-8"));
 		stringBuilder.append("&");
 		stringBuilder.append("startAt=" + URLEncoder.encode(i + "", "UTF-8"));
 		stringBuilder.append("&");
