@@ -6,15 +6,25 @@
   <description>bug-rep-analyzer</description>
   
   
-	<build>
+		<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>2.3</version>
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                </configuration>
+				<configuration>
+					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<filters>
+				        <filter>
+				            <artifact>*:*</artifact>
+				            <excludes>
+				                <exclude>META-INF/*.SF</exclude>
+				                <exclude>META-INF/*.DSA</exclude>
+				                <exclude>META-INF/*.RSA</exclude>
+				            </excludes>
+				        </filter>
+				    </filters>
+				</configuration>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -34,7 +44,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-	</build>	
+	</build>
   
   <dependencies>
   	<dependency>
