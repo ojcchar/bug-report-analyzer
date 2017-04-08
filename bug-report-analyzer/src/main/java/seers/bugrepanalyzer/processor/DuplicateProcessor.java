@@ -66,7 +66,7 @@ public class DuplicateProcessor implements ThreadProcessor {
 			for (JSONIssueLink link : issueLinks) {
 				JSONIssue outwardIssue = link.getOutwardIssue();
 				if (outwardIssue == null) {
-					System.out.println(issue.getKey());
+					// System.out.println(issue.getKey());
 					continue;
 				}
 				List<String> nextLine = Arrays.asList(new String[] { String.valueOf(issue.getId()), issue.getKey(),

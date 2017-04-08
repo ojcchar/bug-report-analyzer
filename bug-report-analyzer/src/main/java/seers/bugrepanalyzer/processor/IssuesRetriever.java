@@ -24,7 +24,7 @@ import seers.bugrepanalyzer.json.JSONIssues;
 
 public class IssuesRetriever implements ThreadProcessor {
 
-	private final static String JIRA_PATH_SEARCH = "/jira/rest/api/2/search?";
+	private final static String JIRA_PATH_SEARCH = "/rest/api/2/search?";
 	private final static Logger LOGGER = LoggerFactory.getLogger(IssuesRetriever.class);
 
 	private String domain;
@@ -72,6 +72,7 @@ public class IssuesRetriever implements ThreadProcessor {
 
 			writeJsonIssues(issuesContent);
 		} catch (Exception e) {
+			e.printStackTrace();
 			ThreadException e2 = new ThreadException(e.getMessage());
 			ExceptionUtils.addStackTrace(e, e2);
 			throw e2;
@@ -83,6 +84,8 @@ public class IssuesRetriever implements ThreadProcessor {
 		String contentFile;
 		String jql = HttpJiraUtils.getJql(project, currentIssue, numResults);
 		String urlJira = domain + JIRA_PATH_SEARCH + jql;
+		
+//		System.out.println(urlJira);
 
 		String response = HttpJiraUtils.getStringResponse(urlJira);
 
@@ -124,6 +127,6 @@ public class IssuesRetriever implements ThreadProcessor {
 
 	@Override
 	public String getName() {
-		return "project [" + this.currentIssue + ", " + (currentIssue + numResults) + "]";
+		return project+" [" + this.currentIssue + ", " + (currentIssue + numResults) + "]";
 	}
 }

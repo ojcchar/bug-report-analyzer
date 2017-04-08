@@ -31,6 +31,32 @@ public class JSONIssueFields {
 	private String summary;
 	private JSONIssueField creator;
 	private JSONIssueField reporter;
+	
+	public JSONIssueFields() {
+	}
+
+	public JSONIssueFields(JSONIssueField issueType, List<JSONIssueField> fixVersions,
+			JSONIssueField resolution, Date resolutionDate, Date created, JSONIssueField priority,
+			List<JSONIssueField> versions, Date updated, JSONIssueField status, List<JSONIssueField> components,
+			String description, String summary, JSONIssueField creator, JSONIssueField reporter,
+			List<JSONIssueLink> issueLinks) {
+		super();
+		this.issueType = issueType;
+		this.fixVersions = fixVersions;
+		this.resolution = resolution;
+		this.resolutionDate = resolutionDate;
+		this.created = created;
+		this.priority = priority;
+		this.versions = versions;
+		this.updated = updated;
+		this.status = status;
+		this.components = components;
+		this.description = description;
+		this.summary = summary;
+		this.creator = creator;
+		this.reporter = reporter;
+		this.issueLinks = issueLinks;
+	}
 
 	@SerializedName("issuelinks")
 	private List<JSONIssueLink> issueLinks;

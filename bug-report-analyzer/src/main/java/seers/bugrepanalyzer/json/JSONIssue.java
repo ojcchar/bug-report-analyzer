@@ -9,6 +9,13 @@ public class JSONIssue {
 	private String key;
 	private JSONIssueFields fields;
 
+	public JSONIssue(int id, String key, JSONIssueFields fields) {
+		super();
+		this.id = id;
+		this.key = key;
+		this.fields = fields;
+	}
+
 	public int getId() {
 		return id;
 	}

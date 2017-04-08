@@ -18,7 +18,7 @@ import com.google.gson.JsonParser;
 
 public class HttpJiraUtils {
 	private final static HttpRequestFactory requestFactory = new NetHttpTransport().createRequestFactory();
-	private static final String JIRA_PATH_SEARCH = "/jira/rest/api/2/search?";
+	private static final String JIRA_PATH_SEARCH = "/rest/api/2/search?";
 
 	public static String getJql(String project, int i, int numResults) throws UnsupportedEncodingException {
 		StringBuilder stringBuilder = new StringBuilder();
@@ -37,16 +37,19 @@ public class HttpJiraUtils {
 
 		HttpRequest httpRequest = requestFactory.buildGetRequest(new GenericUrl(url));
 		HttpResponse response = httpRequest.execute();
-
+		
 		InputStream stream = response.getContent();
 
-		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-		StringBuilder result = new StringBuilder();
-		String line;
-		while ((line = reader.readLine()) != null) {
-			result.append(line);
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream));) {
+			StringBuilder result = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				result.append(line);
+			}
+			
+			response.disconnect();
+			return result.toString();
 		}
-		return result.toString();
 
 	}
 
@@ -54,6 +57,8 @@ public class HttpJiraUtils {
 
 		String jql = HttpJiraUtils.getJql(project, 0, 0);
 		String urlJira = domain + JIRA_PATH_SEARCH + jql;
+
+		System.out.println(urlJira);
 
 		String response = HttpJiraUtils.getStringResponse(urlJira);
 		JsonObject jsonObject = new JsonParser().parse(response).getAsJsonObject();
